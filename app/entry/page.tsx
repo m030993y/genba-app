@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "../supabase";
 
@@ -9,13 +9,14 @@ type PhotoItem = {
   previewUrl: string;
 };
 
-export default function EntryPage() {
+function EntryForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const today = new Date().toISOString().split("T")[0];
 
   const [date, setDate] = useState(searchParams.get("date") || today);
   const [siteName, setSiteName] = useState(searchParams.get("site") || "");
+  const memo = searchParams.get("memo") || "";
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
   const [hasSupport, setHasSupport] = useState("");
   const [supportCount, setSupportCount] = useState("");
@@ -139,6 +140,12 @@ export default function EntryPage() {
 
       <h1 style={{ fontSize: "28px", fontWeight: "bold", color: "#111111" }}>現場経費アプリ</h1>
 
+      {memo && (
+        <div style={{ marginTop: "16px", padding: "12px 16px", backgroundColor: "#fef3c7", border: "1px solid #fcd34d", borderRadius: "8px", color: "#111111", fontSize: "14px", whiteSpace: "pre-wrap", textAlign: "left" }}>
+          📝 {memo}
+        </div>
+      )}
+
       <p style={labelStyle}>日付</p>
       <input type="date" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyle} />
 
@@ -166,12 +173,12 @@ export default function EntryPage() {
       {hasSupport === "あり" && (
         <>
           <p style={labelStyle}>応援人数</p>
-          <input type="number" value={supportCount} onChange={(e) => setSupportCount(e.target.value)} placeholder="例：1" style={{ ...inputStyle, width: "100px", textAlign: "center" }} />
+          <input type="number" value={supportCount} onChange={(e) => setSupportCount(e.target.value)} placeholder="例:1" style={{ ...inputStyle, width: "100px", textAlign: "center" }} />
         </>
       )}
 
       <p style={labelStyle}>駐車場代</p>
-      <input type="number" value={parkingFee} onChange={(e) => setParkingFee(e.target.value)} placeholder="例：800" style={{ ...inputStyle, width: "140px", textAlign: "center" }} />
+      <input type="number" value={parkingFee} onChange={(e) => setParkingFee(e.target.value)} placeholder="例:800" style={{ ...inputStyle, width: "140px", textAlign: "center" }} />
 
       {parkingFee && (
         <>
@@ -188,7 +195,7 @@ export default function EntryPage() {
       )}
 
       <p style={labelStyle}>材料代</p>
-      <input type="number" value={materialFee} onChange={(e) => setMaterialFee(e.target.value)} placeholder="例：4800" style={{ ...inputStyle, width: "140px", textAlign: "center" }} />
+      <input type="number" value={materialFee} onChange={(e) => setMaterialFee(e.target.value)} placeholder="例:4800" style={{ ...inputStyle, width: "140px", textAlign: "center" }} />
 
       {materialFee && (
         <>
@@ -237,5 +244,13 @@ export default function EntryPage() {
         </p>
       )}
     </div>
+  );
+}
+
+export default function EntryPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: "40px", textAlign: "center", color: "#888888" }}>読み込み中...</div>}>
+      <EntryForm />
+    </Suspense>
   );
 }
