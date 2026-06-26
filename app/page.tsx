@@ -29,7 +29,8 @@ export default function Home() {
   const [modalSiteName, setModalSiteName] = useState("");
   const [modalMemo, setModalMemo] = useState("");
   const [modalSaving, setModalSaving] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");
+  const [modalMessage, setModalMessage] = useState("");const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   // 長押しメニュー
   const [actionSchedule, setActionSchedule] = useState<Schedule | null>(null);
@@ -192,6 +193,20 @@ export default function Home() {
     } else {
       setViewMonth(viewMonth + 1);
     }
+  };const handleTouchStart = (e: React.TouchEvent) => {
+    touchStartX.current = e.changedTouches[0].clientX;
+  };
+
+  const handleTouchEnd = (e: React.TouchEvent) => {
+    touchEndX.current = e.changedTouches[0].clientX;
+    const diff = touchStartX.current - touchEndX.current;
+    if (Math.abs(diff) > 60) {
+      if (diff > 0) {
+        goNextMonth();
+      } else {
+        goPrevMonth();
+      }
+    }
   };
 
   const scheduleMap: { [date: string]: Schedule[] } = {};
@@ -232,7 +247,11 @@ export default function Home() {
   const CELL_HEIGHT = "78px";
 
   return (
-    <div style={{ backgroundColor: "#ffffff", color: "#111111", minHeight: "100vh", position: "relative" }}>
+    <div
+      onTouchStart={handleTouchStart}
+      onTouchEnd={handleTouchEnd}
+      style={{ backgroundColor: "#ffffff", color: "#111111", minHeight: "100vh", position: "relative" }}
+    >
       <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto" }}>
         
 
