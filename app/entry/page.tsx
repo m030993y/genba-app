@@ -69,9 +69,8 @@ function EntryForm() {
 
     for (const photo of photos) {
       const extension = photo.file.name.split(".").pop();
-      const safeSite = siteName ? siteName.replace(/[\\/:*?"<>|\s]/g, "") : "未入力";
-      const photoIndex = photoUrls.length + 1;
-      const fileName = `${date}_${safeSite}_${photoIndex}_${Date.now().toString(36)}.${extension}`;
+     const photoIndex = photoUrls.length + 1;
+      const fileName = `${date}_${photoIndex}_${Date.now().toString(36)}.${extension}`;
       const { error: uploadError } = await supabase.storage.from("receipts").upload(fileName, photo.file);
       if (uploadError) {
         setMessage("写真のアップロードに失敗しました：" + uploadError.message);
