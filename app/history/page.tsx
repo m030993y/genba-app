@@ -61,16 +61,7 @@ export default function HistoryPage() {
     fetchExpenses();
   }, []);
 
-  const handleDelete = async (e: Expense) => {
-    const ok = window.confirm(`${e.date} ${e.site_name} の経費を削除しますか?`);
-    if (!ok) return;
-    const { error } = await supabase.from("expenses").delete().eq("id", e.id);
-    if (error) {
-      alert("削除に失敗しました：" + error.message);
-    } else {
-      fetchExpenses();
-    }
-  };
+ 
 
   const openEdit = (e: Expense) => {
     setEditingExpense(e);
@@ -239,13 +230,7 @@ export default function HistoryPage() {
                       >
                         編集
                       </button>
-                      <button
-                        onClick={() => handleDelete(e)}
-                        style={{ padding: "4px 10px", fontSize: "12px", color: "#dc2626", backgroundColor: "#ffffff", border: "1px solid #dc2626", borderRadius: "6px", cursor: "pointer" }}
-                      >
-                        削除
-                      </button>
-                    </div>
+                                        </div>
                   </div>
 
                   <p style={{ margin: "6px 0 0 0", fontSize: "17px", fontWeight: "bold", color: "#111111" }}>
@@ -396,13 +381,32 @@ export default function HistoryPage() {
               <p style={{ marginTop: "10px", fontSize: "13px", color: "#dc2626", textAlign: "center" }}>{eMessage}</p>
             )}
 
-            <div style={{ marginTop: "20px", display: "flex", gap: "10px", justifyContent: "flex-end" }}>
-              <button onClick={closeEdit} style={{ padding: "10px 18px", fontSize: "15px", color: "#555555", backgroundColor: "#ffffff", border: "1px solid #ccc", borderRadius: "8px", cursor: "pointer" }}>
-                キャンセル
+            <div style={{ marginTop: "20px", display: "flex", gap: "10px", justifyContent: "space-between", alignItems: "center" }}>
+              <button
+                onClick={async () => {
+                  if (!editingExpense) return;
+                  const ok = window.confirm(`${editingExpense.date} ${editingExpense.site_name} の経費を削除しますか?`);
+                  if (!ok) return;
+                  const { error } = await supabase.from("expenses").delete().eq("id", editingExpense.id);
+                  if (error) {
+                    alert("削除に失敗しました：" + error.message);
+                  } else {
+                    closeEdit();
+                    fetchExpenses();
+                  }
+                }}
+                style={{ padding: "10px 18px", fontSize: "15px", color: "#ffffff", backgroundColor: "#dc2626", border: "none", borderRadius: "8px", cursor: "pointer" }}
+              >
+                削除
               </button>
-              <button onClick={handleSaveEdit} disabled={eSaving} style={{ padding: "10px 18px", fontSize: "15px", color: "#ffffff", backgroundColor: eSaving ? "#93c5fd" : "#2563eb", border: "none", borderRadius: "8px", cursor: eSaving ? "default" : "pointer" }}>
-                {eSaving ? "保存中..." : "保存"}
-              </button>
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button onClick={closeEdit} style={{ padding: "10px 18px", fontSize: "15px", color: "#555555", backgroundColor: "#ffffff", border: "1px solid #ccc", borderRadius: "8px", cursor: "pointer" }}>
+                  キャンセル
+                </button>
+                <button onClick={handleSaveEdit} disabled={eSaving} style={{ padding: "10px 18px", fontSize: "15px", color: "#ffffff", backgroundColor: eSaving ? "#93c5fd" : "#2563eb", border: "none", borderRadius: "8px", cursor: eSaving ? "default" : "pointer" }}>
+                  {eSaving ? "保存中..." : "保存"}
+                </button>
+              </div>
             </div>
           </div>
         </div>
