@@ -133,7 +133,9 @@ export default function HistoryPage() {
     const uploadedUrls: string[] = [];
     for (const p of eNewPhotos) {
       const extension = p.file.name.split(".").pop();
-      const fileName = `${Date.now()}_${Math.random().toString(36).slice(2, 8)}.${extension}`;
+      const safeSite = eSiteName ? eSiteName.replace(/[\\/:*?"<>|\s]/g, "") : "未入力";
+      const photoIndex = eExistingPhotos.length + uploadedUrls.length + 1;
+      const fileName = `${eDate}_${safeSite}_${photoIndex}_${Date.now().toString(36)}.${extension}`;
       const { error: uploadError } = await supabase.storage.from("receipts").upload(fileName, p.file);
       if (uploadError) {
         setEMessage("写真のアップロードに失敗しました：" + uploadError.message);
