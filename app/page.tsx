@@ -264,7 +264,15 @@ export default function Home() {
       onTouchEnd={handleTouchEnd}
       style={{ backgroundColor: "#ffffff", color: "#111111", minHeight: "100vh", position: "relative" }}
     >
-      <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto" }}>
+     <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
+          <button
+            onClick={() => router.push("/history")}
+            style={{ padding: "6px 14px", fontSize: "13px", color: "#2563eb", backgroundColor: "#ffffff", border: "1px solid #2563eb", borderRadius: "8px", cursor: "pointer" }}
+          >
+            履歴
+          </button>
+        </div>
+         <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "16px" }}>
           <button onClick={goPrevMonth} style={{ padding: "8px 14px", border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#ffffff", color: "#111111", cursor: "pointer" }}>
             ＜

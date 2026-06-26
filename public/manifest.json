@@ -1,6 +1,6 @@
 {
   "name": "入力アプリ",
-  "short_name": "現場",
+  "short_name": "入力カレンダー",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
