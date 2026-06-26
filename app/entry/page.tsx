@@ -98,17 +98,8 @@ function EntryForm() {
 
     if (error) {
       setMessage("保存に失敗しました：" + error.message);
-    } else {
-      setMessage("保存しました！");
-      setSiteName("");
-      setSelectedNames([]);
-      setHasSupport("");
-      setSupportCount("");
-      setParkingFee("");
-      setParkingPayer("");
-      setMaterialFee("");
-      setMaterialPayer("");
-      setPhotos([]);
+   } else {
+      router.push("/");
     }
   };
 
