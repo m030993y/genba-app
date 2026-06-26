@@ -98,8 +98,11 @@ function EntryForm() {
 
     if (error) {
       setMessage("保存に失敗しました：" + error.message);
-   } else {
-      router.push("/");
+  } else {
+      setMessage("保存しました！");
+      setTimeout(() => {
+        router.push("/");
+      }, 1000);
     }
   };
 
