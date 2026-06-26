@@ -11,7 +11,16 @@ type Schedule = {
   end_date: string | null;
   site_name: string;
   memo: string | null;
+  color: string | null;
 };
+
+const COLORS = [
+  { name: "緑", value: "#1d9e75" },
+  { name: "赤", value: "#dc2626" },
+  { name: "青", value: "#2563eb" },
+  { name: "黄", value: "#ca8a04" },
+  { name: "紫", value: "#9333ea" },
+];
 
 export default function Home() {
   const router = useRouter();
@@ -21,21 +30,22 @@ export default function Home() {
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(new Date().getMonth());
 
-  // ポップアップ
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
   const [modalStartDate, setModalStartDate] = useState(today);
   const [modalEndDate, setModalEndDate] = useState(today);
   const [modalSiteName, setModalSiteName] = useState("");
   const [modalMemo, setModalMemo] = useState("");
+  const [modalColor, setModalColor] = useState(COLORS[0].value);
   const [modalSaving, setModalSaving] = useState(false);
-  const [modalMessage, setModalMessage] = useState("");const touchStartX = useRef(0);
-  const touchEndX = useRef(0);
+  const [modalMessage, setModalMessage] = useState("");
 
-  // 長押しメニュー
   const [actionSchedule, setActionSchedule] = useState<Schedule | null>(null);
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressTriggered = useRef(false);
+
+  const touchStartX = useRef(0);
+  const touchEndX = useRef(0);
 
   const fetchSchedules = async () => {
     const { data, error } = await supabase.from("schedules").select("*");
@@ -68,7 +78,6 @@ export default function Home() {
     router.push(`/entry?${params.toString()}`);
   };
 
-  // 長押し検知
   const startPress = (schedule: Schedule) => {
     longPressTriggered.current = false;
     longPressTimer.current = setTimeout(() => {
@@ -93,7 +102,6 @@ export default function Home() {
     handleSelectSchedule(schedule, dateKey);
   };
 
-  // 編集モードを開く
   const openEditModal = (schedule: Schedule) => {
     const { start, end } = getRange(schedule);
     setEditingId(schedule.id);
@@ -101,12 +109,12 @@ export default function Home() {
     setModalEndDate(end || today);
     setModalSiteName(schedule.site_name);
     setModalMemo(schedule.memo || "");
+    setModalColor(schedule.color || COLORS[0].value);
     setModalMessage("");
     setActionSchedule(null);
     setShowModal(true);
   };
 
-  // 削除
   const handleDelete = async () => {
     if (!actionSchedule) return;
     const ok = window.confirm(`「${actionSchedule.site_name}」を削除しますか?`);
@@ -121,7 +129,6 @@ export default function Home() {
     }
   };
 
-  // 追加または更新
   const handleAddOrUpdateSchedule = async () => {
     if (!modalSiteName) {
       setModalMessage("現場名を入力してください");
@@ -143,6 +150,7 @@ export default function Home() {
           date: modalStartDate,
           site_name: modalSiteName,
           memo: modalMemo || null,
+          color: modalColor,
         })
         .eq("id", editingId);
 
@@ -161,6 +169,7 @@ export default function Home() {
         date: modalStartDate,
         site_name: modalSiteName,
         memo: modalMemo || null,
+        color: modalColor,
       });
 
       setModalSaving(false);
@@ -172,6 +181,7 @@ export default function Home() {
         setModalEndDate(today);
         setModalSiteName("");
         setModalMemo("");
+        setModalColor(COLORS[0].value);
         fetchSchedules();
       }
     }
@@ -193,7 +203,9 @@ export default function Home() {
     } else {
       setViewMonth(viewMonth + 1);
     }
-  };const handleTouchStart = (e: React.TouchEvent) => {
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
     touchStartX.current = e.changedTouches[0].clientX;
   };
 
@@ -253,8 +265,6 @@ export default function Home() {
       style={{ backgroundColor: "#ffffff", color: "#111111", minHeight: "100vh", position: "relative" }}
     >
       <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto" }}>
-        
-
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "16px" }}>
           <button onClick={goPrevMonth} style={{ padding: "8px 14px", border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#ffffff", color: "#111111", cursor: "pointer" }}>
             ＜
@@ -318,7 +328,7 @@ export default function Home() {
                           onTouchStart={() => startPress(s)}
                           onTouchEnd={cancelPress}
                           onTouchCancel={cancelPress}
-                          style={{ fontSize: "10px", padding: "2px 3px", backgroundColor: "#1d9e75", color: "#ffffff", border: "none", borderRadius: "4px", cursor: "pointer", textAlign: "left", lineHeight: "1.3", overflow: "hidden",  whiteSpace: "nowrap", display: "block", width: "100%", minWidth: 0 }}
+                          style={{ fontSize: "10px", padding: "2px 3px", backgroundColor: s.color || "#1d9e75", color: "#ffffff", border: "none", borderRadius: "4px", cursor: "pointer", textAlign: "left", lineHeight: "1.3", overflow: "hidden", whiteSpace: "nowrap", display: "block", width: "100%", minWidth: 0 }}
                         >
                           {s.site_name}
                         </button>
@@ -339,6 +349,7 @@ export default function Home() {
           setModalEndDate(today);
           setModalSiteName("");
           setModalMemo("");
+          setModalColor(COLORS[0].value);
           setModalMessage("");
           setShowModal(true);
         }}
@@ -362,7 +373,6 @@ export default function Home() {
         ＋
       </button>
 
-      {/* 長押しメニュー */}
       {actionSchedule && (
         <div
           onClick={() => setActionSchedule(null)}
@@ -399,7 +409,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* 追加・編集ポップアップ */}
       {showModal && (
         <div
           onClick={() => setShowModal(false)}
@@ -440,6 +449,25 @@ export default function Home() {
               placeholder="例：鵠沼インターホン"
               style={{ width: "100%", marginTop: "4px", padding: "10px", fontSize: "16px", border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#ffffff", color: "#111111", boxSizing: "border-box" }}
             />
+
+            <p style={{ marginTop: "12px", fontSize: "14px", color: "#555555" }}>色</p>
+            <div style={{ marginTop: "6px", display: "flex", gap: "8px", flexWrap: "wrap" }}>
+              {COLORS.map((c) => (
+                <button
+                  key={c.value}
+                  onClick={() => setModalColor(c.value)}
+                  style={{
+                    width: "40px",
+                    height: "40px",
+                    borderRadius: "50%",
+                    backgroundColor: c.value,
+                    border: modalColor === c.value ? "3px solid #111111" : "1px solid #cccccc",
+                    cursor: "pointer",
+                  }}
+                  aria-label={c.name}
+                />
+              ))}
+            </div>
 
             <p style={{ marginTop: "12px", fontSize: "14px", color: "#555555" }}>メモ（任意）</p>
             <textarea
