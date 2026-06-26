@@ -217,7 +217,7 @@ function EntryForm() {
       <label htmlFor="photo-input" style={{ display: "inline-block", marginTop: "8px", padding: "16px 28px", fontSize: "16px", fontWeight: "bold", color: "#2563eb", border: "2px dashed #2563eb", borderRadius: "12px", backgroundColor: "#eff6ff", cursor: "pointer" }}>
         タップして撮影・追加
       </label>
-      <input id="photo-input" type="file" accept="image/*" capture="environment" onChange={handlePhotoChange} style={{ display: "none" }} />
+      <input id="photo-input" type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: "none" }} />
 
       {photos.length > 0 && (
         <div style={{ marginTop: "16px", display: "flex", flexWrap: "wrap", gap: "12px", justifyContent: "center" }}>

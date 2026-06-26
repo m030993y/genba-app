@@ -378,7 +378,7 @@ export default function HistoryPage() {
             >
               ＋ 領収書を追加
             </label>
-            <input id="add-photo-input" type="file" accept="image/*" capture="environment" onChange={handleAddPhoto} style={{ display: "none" }} />
+            <input id="add-photo-input" type="file" accept="image/*" onChange={handleAddPhoto} style={{ display: "none" }} />
 
             {eNewPhotos.length > 0 && (
               <div style={{ marginTop: "8px", display: "flex", flexWrap: "wrap", gap: "6px" }}>
