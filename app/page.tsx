@@ -301,7 +301,7 @@ export default function Home() {
                           onTouchStart={() => startPress(s)}
                           onTouchEnd={cancelPress}
                           onTouchCancel={cancelPress}
-                          style={{ fontSize: "10px", padding: "2px 3px", backgroundColor: "#1d9e75", color: "#ffffff", border: "none", borderRadius: "4px", cursor: "pointer", textAlign: "left", lineHeight: "1.3", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", display: "block", width: "100%", minWidth: 0 }}
+                          style={{ fontSize: "10px", padding: "2px 3px", backgroundColor: "#1d9e75", color: "#ffffff", border: "none", borderRadius: "4px", cursor: "pointer", textAlign: "left", lineHeight: "1.3", overflow: "hidden",  whiteSpace: "nowrap", display: "block", width: "100%", minWidth: 0 }}
                         >
                           {s.site_name}
                         </button>
