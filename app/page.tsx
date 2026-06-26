@@ -234,9 +234,7 @@ export default function Home() {
   return (
     <div style={{ backgroundColor: "#ffffff", color: "#111111", minHeight: "100vh", position: "relative" }}>
       <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto" }}>
-        <h1 style={{ fontSize: "20px", fontWeight: "bold", textAlign: "center", margin: 0, color: "#111111" }}>
-          現場経費アプリ
-        </h1>
+        
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "16px" }}>
           <button onClick={goPrevMonth} style={{ padding: "8px 14px", border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#ffffff", color: "#111111", cursor: "pointer" }}>
