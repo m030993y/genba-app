@@ -191,17 +191,26 @@ export default function AttendancePage() {
     <div style={{ backgroundColor: "#ffffff", color: "#111111", minHeight: "100vh" }}>
       <div style={{ padding: "16px", maxWidth: "720px", margin: "0 auto" }}>
         <button
+          <button
           onClick={() => router.push("/")}
+          className="no-print"
           style={{ marginBottom: "16px", padding: "8px 16px", fontSize: "14px", color: "#2563eb", backgroundColor: "#ffffff", border: "1px solid #2563eb", borderRadius: "8px", cursor: "pointer" }}
         >
           ＜ カレンダーに戻る
         </button>
+        </button><button
+          onClick={() => window.print()}
+          className="no-print"
+          style={{ marginBottom: "16px", marginLeft: "8px", padding: "8px 16px", fontSize: "14px", color: "#ffffff", backgroundColor: "#2563eb", border: "none", borderRadius: "8px", cursor: "pointer" }}
+        >
+          印刷・PDF
+        </button>
 
-        <h1 style={{ fontSize: "22px", fontWeight: "bold", textAlign: "center", margin: 0, color: "#111111" }}>
+        <h1 className="no-print" style={{ fontSize: "22px", fontWeight: "bold", textAlign: "center", margin: 0, color: "#111111" }}>
           出勤簿
         </h1>
 
-        <div style={{ display: "flex", gap: "8px", justifyContent: "center", marginTop: "16px", flexWrap: "wrap" }}>
+        <div className="no-print" style={{ display: "flex", gap: "8px", justifyContent: "center", marginTop: "16px", flexWrap: "wrap" }}>
           {ALL_NAMES.map((n) => (
             <button
               key={n}
@@ -271,7 +280,7 @@ export default function AttendancePage() {
                   <th style={{ padding: "6px 4px", border: "1px solid #e5e7eb" }}>終業</th>
                   <th style={{ padding: "6px 4px", border: "1px solid #e5e7eb" }}>休憩</th>
                   <th style={{ padding: "6px 4px", border: "1px solid #e5e7eb" }}>実働</th>
-                  <th style={{ padding: "6px 4px", border: "1px solid #e5e7eb", width: "50px" }}></th>
+                  <th className="no-print" style={{ padding: "6px 4px", border: "1px solid #e5e7eb", width: "50px" }}></th>
                 </tr>
               </thead>
               <tbody>
@@ -309,7 +318,7 @@ export default function AttendancePage() {
                       <td style={{ padding: "5px 3px", border: "1px solid #e5e7eb", textAlign: "center" }}>
                         {work}
                       </td>
-                      <td style={{ padding: "5px 3px", border: "1px solid #e5e7eb", textAlign: "center" }}>
+                      <td className="no-print" style={{ padding: "5px 3px", border: "1px solid #e5e7eb", textAlign: "center" }}>
                         {attended && (
                           <button
                             onClick={() => openEdit(dateKey)}
