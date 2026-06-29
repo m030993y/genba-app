@@ -173,7 +173,6 @@ export default function AttendancePage() {
     fetchData();
   };
 
-  // 月の合計実労働時間（分）
   let totalMinutes = 0;
   attendedDates.forEach((d) => {
     const ov = overrideMap[d];
@@ -191,14 +190,13 @@ export default function AttendancePage() {
     <div style={{ backgroundColor: "#ffffff", color: "#111111", minHeight: "100vh" }}>
       <div style={{ padding: "16px", maxWidth: "720px", margin: "0 auto" }}>
         <button
-          <button
           onClick={() => router.push("/")}
           className="no-print"
           style={{ marginBottom: "16px", padding: "8px 16px", fontSize: "14px", color: "#2563eb", backgroundColor: "#ffffff", border: "1px solid #2563eb", borderRadius: "8px", cursor: "pointer" }}
         >
           ＜ カレンダーに戻る
         </button>
-        </button><button
+        <button
           onClick={() => window.print()}
           className="no-print"
           style={{ marginBottom: "16px", marginLeft: "8px", padding: "8px 16px", fontSize: "14px", color: "#ffffff", backgroundColor: "#2563eb", border: "none", borderRadius: "8px", cursor: "pointer" }}
@@ -231,13 +229,13 @@ export default function AttendancePage() {
         </div>
 
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "16px" }}>
-          <button onClick={goPrevMonth} style={{ padding: "8px 14px", border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#ffffff", color: "#111111", cursor: "pointer" }}>
+          <button onClick={goPrevMonth} className="no-print" style={{ padding: "8px 14px", border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#ffffff", color: "#111111", cursor: "pointer" }}>
             ＜
           </button>
           <p style={{ fontSize: "18px", fontWeight: "bold", margin: 0, color: "#111111" }}>
-            {viewYear}年 {viewMonth + 1}月
+            {selectedName}　{viewYear}年 {viewMonth + 1}月
           </p>
-          <button onClick={goNextMonth} style={{ padding: "8px 14px", border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#ffffff", color: "#111111", cursor: "pointer" }}>
+          <button onClick={goNextMonth} className="no-print" style={{ padding: "8px 14px", border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#ffffff", color: "#111111", cursor: "pointer" }}>
             ＞
           </button>
         </div>
@@ -261,7 +259,7 @@ export default function AttendancePage() {
               }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", fontWeight: "bold" }}>
-                <span>{selectedName} の出勤日数</span>
+                <span>出勤日数</span>
                 <span>{attendedDates.size} 日</span>
               </div>
               <div style={{ display: "flex", justifyContent: "space-between" }}>
