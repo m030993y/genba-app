@@ -158,7 +158,7 @@ export default function AttendancePage() {
                   <th style={{ padding: "8px 4px", border: "1px solid #e5e7eb", width: "50px" }}>日</th>
                   <th style={{ padding: "8px 4px", border: "1px solid #e5e7eb", width: "40px" }}>曜</th>
                   <th style={{ padding: "8px 4px", border: "1px solid #e5e7eb", width: "60px" }}>出勤</th>
-                  <th style={{ padding: "8px 4px", border: "1px solid #e5e7eb" }}>現場</th>
+                  
                 </tr>
               </thead>
               <tbody>
