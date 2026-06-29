@@ -62,14 +62,13 @@ export default function AttendancePage() {
 
   // 選んだ人が出勤した日付の集合を作る
   const attendedDates = new Set<string>();
-  const sitePerDate: { [date: string]: Set<string> } = {};
+ 
   expenses.forEach((e) => {
     if (!e.names || !e.date) return;
     const namesArr = e.names.split(/[、,]/).map((n) => n.trim());
     if (namesArr.includes(selectedName)) {
       attendedDates.add(e.date);
-      if (!sitePerDate[e.date]) sitePerDate[e.date] = new Set();
-      if (e.site_name) sitePerDate[e.date].add(e.site_name);
+      
     }
   });
 
@@ -167,7 +166,7 @@ export default function AttendancePage() {
                   const dateKey = formatDateKey(d);
                   const wDay = new Date(viewYear, viewMonth, d).getDay();
                   const attended = attendedDates.has(dateKey);
-                  const sites = sitePerDate[dateKey] ? Array.from(sitePerDate[dateKey]).join("、") : "";
+                  
 
                   return (
                     <tr key={d}>
@@ -180,9 +179,7 @@ export default function AttendancePage() {
                       <td style={{ padding: "6px 4px", border: "1px solid #e5e7eb", textAlign: "center", fontSize: "16px", fontWeight: "bold", color: attended ? "#16a34a" : "#cccccc" }}>
                         {attended ? "○" : ""}
                       </td>
-                      <td style={{ padding: "6px 8px", border: "1px solid #e5e7eb", fontSize: "13px", color: "#333333" }}>
-                        {sites}
-                      </td>
+                      
                     </tr>
                   );
                 })}
