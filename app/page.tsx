@@ -353,7 +353,36 @@ export default function Home() {
           </div>
         )}
       </div>
-
+<div style={{ padding: "0 16px 100px 16px", maxWidth: "480px", margin: "0 auto" }}>
+        <p style={{ fontSize: "14px", fontWeight: "bold", color: "#555555", marginTop: "16px", marginBottom: "8px" }}>
+          今日の予定
+        </p>
+        {(scheduleMap[todayStr] || []).length === 0 ? (
+          <p style={{ fontSize: "13px", color: "#999999", margin: 0 }}>予定はありません</p>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {(scheduleMap[todayStr] || []).map((s) => (
+              <button
+                key={s.id}
+                onClick={() => handleSelectSchedule(s, todayStr)}
+                style={{
+                  padding: "14px 16px",
+                  fontSize: "16px",
+                  fontWeight: "bold",
+                  color: "#ffffff",
+                  backgroundColor: s.color || "#1d9e75",
+                  border: "none",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                  textAlign: "left",
+                }}
+              >
+                {s.site_name}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
       <button
         onClick={() => {
           setEditingId(null);
