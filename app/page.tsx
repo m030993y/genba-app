@@ -3,6 +3,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "./supabase";
+import * as holidayJp from "@holiday-jp/holiday_jp";
 
 type Schedule = {
   id: number;
@@ -249,7 +250,10 @@ export default function Home() {
 
   const todayStr = new Date().toISOString().split("T")[0];
 
-  const formatDateKey = (day: number) => {
+  const isHoliday = (day: number): boolean => {
+    const d = new Date(viewYear, viewMonth, day);
+    return holidayJp.isHoliday(d);
+  };const formatDateKey = (day: number) => {
     const mm = String(viewMonth + 1).padStart(2, "0");
     const dd = String(day).padStart(2, "0");
     return `${viewYear}-${mm}-${dd}`;
@@ -322,7 +326,7 @@ export default function Home() {
                       cursor: "pointer",
                     }}
                   >
-                    <p style={{ fontSize: "12px", margin: 0, fontWeight: isToday ? "bold" : "normal", color: weekday === 0 ? "#dc2626" : weekday === 6 ? "#2563eb" : "#333333" }}>
+                    <p style={{ fontSize: "12px", margin: 0, fontWeight: isToday ? "bold" : "normal", color: isHoliday(day) || weekday === 0 ? "#dc2626" : weekday === 6 ? "#2563eb" : "#333333" }}>
                       {day}
                     </p>
                     <div style={{ marginTop: "2px", display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden" }}>
