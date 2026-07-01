@@ -56,6 +56,12 @@ export default function Home() {
 
   useEffect(() => {
     fetchSchedules();
+  }, []);useEffect(() => {
+    const timer = setInterval(() => {
+      const newToday = new Date().toISOString().split("T")[0];
+      setTodayStr((prev) => (prev !== newToday ? newToday : prev));
+    }, 60000); // 1分ごとに確認
+    return () => clearInterval(timer);
   }, []);
 
   const getRange = (s: Schedule): { start: string; end: string } => {
@@ -248,7 +254,7 @@ export default function Home() {
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
   while (cells.length % 7 !== 0) cells.push(null);
 
-  const todayStr = new Date().toISOString().split("T")[0];
+  const [todayStr, setTodayStr] = useState(new Date().toISOString().split("T")[0]);
 
   const isHoliday = (day: number): boolean => {
     const d = new Date(viewYear, viewMonth, day);
