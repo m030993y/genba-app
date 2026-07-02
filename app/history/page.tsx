@@ -12,6 +12,7 @@ type Expense = {
   names: string;
   has_support: string | null;
   support_count: number | null;
+  support_names: string | null;
   parking_fee: number | null;
   parking_payer: string | null;
   material_fee: number | null;
@@ -35,6 +36,7 @@ export default function HistoryPage() {
   const [eSelectedNames, setESelectedNames] = useState<string[]>([]);
   const [eHasSupport, setEHasSupport] = useState("");
   const [eSupportCount, setESupportCount] = useState("");
+  const [eSupportNames, setESupportNames] = useState<string[]>([]);
   const [eParkingFee, setEParkingFee] = useState("");
   const [eParkingPayer, setEParkingPayer] = useState("");
   const [eMaterialFee, setEMaterialFee] = useState("");
@@ -61,7 +63,15 @@ export default function HistoryPage() {
     fetchExpenses();
   }, []);
 
- 
+  // 応援人数に合わせて応援者名前入力欄を調整
+  useEffect(() => {
+    const count = Number(eSupportCount) || 0;
+    setESupportNames((prev) => {
+      const next = [...prev];
+      while (next.length < count) next.push("");
+      return next.slice(0, count);
+    });
+  }, [eSupportCount]);
 
   const openEdit = (e: Expense) => {
     setEditingExpense(e);
@@ -70,6 +80,7 @@ export default function HistoryPage() {
     setESelectedNames(e.names ? e.names.split(/[、,]/).filter((n) => n.trim().length > 0) : []);
     setEHasSupport(e.has_support || "");
     setESupportCount(e.support_count !== null ? String(e.support_count) : "");
+    setESupportNames(e.support_names ? e.support_names.split(/[、,]/).map((n) => n.trim()) : []);
     setEParkingFee(e.parking_fee !== null ? String(e.parking_fee) : "");
     setEParkingPayer(e.parking_payer || "");
     setEMaterialFee(e.material_fee !== null ? String(e.material_fee) : "");
@@ -98,6 +109,14 @@ export default function HistoryPage() {
       if (!eParkingPayer) setEParkingPayer(updated[0]);
       if (!eMaterialPayer) setEMaterialPayer(updated[0]);
     }
+  };
+
+  const updateSupportName = (index: number, value: string) => {
+    setESupportNames((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
   };
 
   const handleAddPhoto = (ev: React.ChangeEvent<HTMLInputElement>) => {
@@ -137,6 +156,7 @@ export default function HistoryPage() {
     }
 
     const allPhotos = [...eExistingPhotos, ...uploadedUrls];
+    const cleanSupportNames = eSupportNames.map((n) => n.trim()).filter((n) => n.length > 0);
 
     const { error } = await supabase
       .from("expenses")
@@ -146,6 +166,7 @@ export default function HistoryPage() {
         names: eSelectedNames.join("、"),
         has_support: eHasSupport,
         support_count: eHasSupport === "あり" && eSupportCount ? Number(eSupportCount) : null,
+        support_names: eHasSupport === "あり" && cleanSupportNames.length > 0 ? cleanSupportNames.join("、") : null,
         parking_fee: eParkingFee ? Number(eParkingFee) : null,
         parking_payer: eParkingPayer || null,
         material_fee: eMaterialFee ? Number(eMaterialFee) : null,
@@ -216,6 +237,15 @@ export default function HistoryPage() {
               const parkingFeeText = e.parking_fee ? `¥${e.parking_fee.toLocaleString()}${e.parking_payer ? ` (${e.parking_payer})` : ""}` : null;
               const materialFeeText = e.material_fee ? `¥${e.material_fee.toLocaleString()}${e.material_payer ? ` (${e.material_payer})` : ""}` : null;
 
+              let supportText = "";
+              if (e.has_support === "あり" && e.support_count) {
+                supportText = `（応援${e.support_count}人`;
+                if (e.support_names) {
+                  supportText += `：${e.support_names}`;
+                }
+                supportText += `）`;
+              }
+
               return (
                 <div
                   key={e.id}
@@ -230,7 +260,7 @@ export default function HistoryPage() {
                       >
                         編集
                       </button>
-                                        </div>
+                    </div>
                   </div>
 
                   <p style={{ margin: "6px 0 0 0", fontSize: "17px", fontWeight: "bold", color: "#111111" }}>
@@ -239,7 +269,7 @@ export default function HistoryPage() {
 
                   <p style={{ margin: "4px 0 0 0", fontSize: "14px", color: "#333333" }}>
                     {e.names}
-                    {e.has_support === "あり" && e.support_count ? `（応援${e.support_count}人）` : ""}
+                    {supportText}
                   </p>
 
                   {(parkingFeeText || materialFeeText) && (
@@ -310,6 +340,24 @@ export default function HistoryPage() {
               <>
                 <p style={labelStyle}>応援人数</p>
                 <input type="number" value={eSupportCount} onChange={(ev) => setESupportCount(ev.target.value)} style={inputStyle} />
+
+                {eSupportNames.length > 0 && (
+                  <>
+                    <p style={labelStyle}>応援者の氏名</p>
+                    <div style={{ display: "flex", flexDirection: "column", gap: "6px", marginTop: "4px" }}>
+                      {eSupportNames.map((n, i) => (
+                        <input
+                          key={i}
+                          type="text"
+                          value={n}
+                          onChange={(ev) => updateSupportName(i, ev.target.value)}
+                          placeholder={`応援者${i + 1}`}
+                          style={inputStyle}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
               </>
             )}
 

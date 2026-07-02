@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useState } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { supabase } from "../supabase";
 
@@ -20,6 +20,7 @@ function EntryForm() {
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
   const [hasSupport, setHasSupport] = useState("");
   const [supportCount, setSupportCount] = useState("");
+  const [supportNames, setSupportNames] = useState<string[]>([]);
   const [parkingFee, setParkingFee] = useState("");
   const [parkingPayer, setParkingPayer] = useState("");
   const [materialFee, setMaterialFee] = useState("");
@@ -29,6 +30,16 @@ function EntryForm() {
   const [message, setMessage] = useState("");
 
   const names = ["冨澤", "岡田", "岩内"];
+
+  // 応援人数に合わせて名前入力欄の数を調整
+  useEffect(() => {
+    const count = Number(supportCount) || 0;
+    setSupportNames((prev) => {
+      const next = [...prev];
+      while (next.length < count) next.push("");
+      return next.slice(0, count);
+    });
+  }, [supportCount]);
 
   const toggleName = (name: string) => {
     let updatedNames: string[];
@@ -44,6 +55,14 @@ function EntryForm() {
       setParkingPayer(updatedNames[0]);
       setMaterialPayer(updatedNames[0]);
     }
+  };
+
+  const updateSupportName = (index: number, value: string) => {
+    setSupportNames((prev) => {
+      const next = [...prev];
+      next[index] = value;
+      return next;
+    });
   };
 
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -69,7 +88,7 @@ function EntryForm() {
 
     for (const photo of photos) {
       const extension = photo.file.name.split(".").pop();
-     const photoIndex = photoUrls.length + 1;
+      const photoIndex = photoUrls.length + 1;
       const fileName = `${date}_${photoIndex}_${Date.now().toString(36)}.${extension}`;
       const { error: uploadError } = await supabase.storage.from("receipts").upload(fileName, photo.file);
       if (uploadError) {
@@ -81,12 +100,15 @@ function EntryForm() {
       photoUrls.push(publicUrlData.publicUrl);
     }
 
+    const cleanSupportNames = supportNames.map((n) => n.trim()).filter((n) => n.length > 0);
+
     const { error } = await supabase.from("expenses").insert({
       date: date,
       site_name: siteName,
       names: selectedNames.join("、"),
       has_support: hasSupport,
       support_count: hasSupport === "あり" ? Number(supportCount) : null,
+      support_names: hasSupport === "あり" && cleanSupportNames.length > 0 ? cleanSupportNames.join("、") : null,
       parking_fee: parkingFee ? Number(parkingFee) : null,
       parking_payer: parkingPayer || null,
       material_fee: materialFee ? Number(materialFee) : null,
@@ -98,7 +120,7 @@ function EntryForm() {
 
     if (error) {
       setMessage("保存に失敗しました：" + error.message);
-  } else {
+    } else {
       setMessage("保存しました！");
       setTimeout(() => {
         router.push("/");
@@ -169,6 +191,24 @@ function EntryForm() {
         <>
           <p style={labelStyle}>応援人数</p>
           <input type="number" value={supportCount} onChange={(e) => setSupportCount(e.target.value)} placeholder="例:1" style={{ ...inputStyle, width: "100px", textAlign: "center" }} />
+
+          {supportNames.length > 0 && (
+            <>
+              <p style={labelStyle}>応援者の氏名</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px", alignItems: "center", marginTop: "8px" }}>
+                {supportNames.map((n, i) => (
+                  <input
+                    key={i}
+                    type="text"
+                    value={n}
+                    onChange={(e) => updateSupportName(i, e.target.value)}
+                    placeholder={`応援者${i + 1}`}
+                    style={{ ...inputStyle, width: "200px", textAlign: "center", marginTop: 0 }}
+                  />
+                ))}
+              </div>
+            </>
+          )}
         </>
       )}
 
