@@ -11,6 +11,7 @@ type Expense = {
   names: string;
   has_support: string | null;
   support_count: number | null;
+  support_names: string | null;
   parking_fee: number | null;
   parking_payer: string | null;
   material_fee: number | null;
@@ -40,7 +41,6 @@ export default function SummaryPage() {
     fetchExpenses();
   }, []);
 
-  // 現場ごとに集計する
   const summaryMap: { [siteName: string]: SiteSummary } = {};
   const daysSet: { [siteName: string]: Set<string> } = {};
 
@@ -59,15 +59,22 @@ export default function SummaryPage() {
       daysSet[site] = new Set();
     }
 
-    // 氏名の人数をカウント（「、」区切りで分けて数える）
+    // 通常の氏名の人数
     const nameCount = e.names
       ? e.names.split(/[、,]/).filter((n) => n.trim().length > 0).length
       : 0;
     summaryMap[site].totalPeople += nameCount;
 
-    // 応援人数も足す
-    if (e.has_support === "あり" && e.support_count) {
-      summaryMap[site].totalPeople += e.support_count;
+    // 応援：名前があれば名前の数を、なければsupport_countを使う
+    if (e.has_support === "あり") {
+      const supportNameCount = e.support_names
+        ? e.support_names.split(/[、,]/).filter((n) => n.trim().length > 0).length
+        : 0;
+      if (supportNameCount > 0) {
+        summaryMap[site].totalPeople += supportNameCount;
+      } else if (e.support_count) {
+        summaryMap[site].totalPeople += e.support_count;
+      }
     }
 
     if (e.parking_fee) summaryMap[site].parkingTotal += e.parking_fee;
@@ -76,7 +83,6 @@ export default function SummaryPage() {
     if (e.date) daysSet[site].add(e.date);
   });
 
-  // daysを反映＆合計を計算
   Object.keys(summaryMap).forEach((site) => {
     summaryMap[site].days = daysSet[site].size;
     summaryMap[site].grandTotal = summaryMap[site].parkingTotal + summaryMap[site].materialTotal;
