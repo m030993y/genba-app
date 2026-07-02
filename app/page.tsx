@@ -30,6 +30,7 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
   const [viewYear, setViewYear] = useState(new Date().getFullYear());
   const [viewMonth, setViewMonth] = useState(new Date().getMonth());
+  const [todayStr, setTodayStr] = useState(today);
 
   const [showModal, setShowModal] = useState(false);
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -41,9 +42,10 @@ export default function Home() {
   const [modalSaving, setModalSaving] = useState(false);
   const [modalMessage, setModalMessage] = useState("");
 
+  // 日をタップしたときの予定一覧ポップアップ
+  const [dayPopupDate, setDayPopupDate] = useState<string | null>(null);
+  // 各予定のアクションメニュー
   const [actionSchedule, setActionSchedule] = useState<Schedule | null>(null);
-  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const longPressTriggered = useRef(false);
 
   const touchStartX = useRef(0);
   const touchEndX = useRef(0);
@@ -56,11 +58,13 @@ export default function Home() {
 
   useEffect(() => {
     fetchSchedules();
-  }, []);useEffect(() => {
+  }, []);
+
+  useEffect(() => {
     const timer = setInterval(() => {
       const newToday = new Date().toISOString().split("T")[0];
       setTodayStr((prev) => (prev !== newToday ? newToday : prev));
-    }, 60000); // 1分ごとに確認
+    }, 60000);
     return () => clearInterval(timer);
   }, []);
 
@@ -80,33 +84,9 @@ export default function Home() {
     router.push(`/entry?${params.toString()}`);
   };
 
-  const handleEmptyCellClick = (dateKey: string) => {
+  const handleEmptyEntry = (dateKey: string) => {
     const params = new URLSearchParams({ date: dateKey });
     router.push(`/entry?${params.toString()}`);
-  };
-
-  const startPress = (schedule: Schedule) => {
-    longPressTriggered.current = false;
-    longPressTimer.current = setTimeout(() => {
-      longPressTriggered.current = true;
-      setActionSchedule(schedule);
-    }, 500);
-  };
-
-  const cancelPress = () => {
-    if (longPressTimer.current) {
-      clearTimeout(longPressTimer.current);
-      longPressTimer.current = null;
-    }
-  };
-
-  const handleScheduleClick = (e: React.MouseEvent, schedule: Schedule, dateKey: string) => {
-    e.stopPropagation();
-    if (longPressTriggered.current) {
-      longPressTriggered.current = false;
-      return;
-    }
-    handleSelectSchedule(schedule, dateKey);
   };
 
   const openEditModal = (schedule: Schedule) => {
@@ -119,6 +99,7 @@ export default function Home() {
     setModalColor(schedule.color || COLORS[0].value);
     setModalMessage("");
     setActionSchedule(null);
+    setDayPopupDate(null);
     setShowModal(true);
   };
 
@@ -132,6 +113,7 @@ export default function Home() {
       alert("削除に失敗しました：" + error.message);
     } else {
       setActionSchedule(null);
+      setDayPopupDate(null);
       fetchSchedules();
     }
   };
@@ -254,19 +236,27 @@ export default function Home() {
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
   while (cells.length % 7 !== 0) cells.push(null);
 
-  const [todayStr, setTodayStr] = useState(new Date().toISOString().split("T")[0]);
-
   const isHoliday = (day: number): boolean => {
     const d = new Date(viewYear, viewMonth, day);
     return holidayJp.isHoliday(d);
-  };const formatDateKey = (day: number) => {
+  };
+
+  const formatDateKey = (day: number) => {
     const mm = String(viewMonth + 1).padStart(2, "0");
     const dd = String(day).padStart(2, "0");
     return `${viewYear}-${mm}-${dd}`;
   };
 
+  const formatDateForPopup = (dateKey: string) => {
+    const d = new Date(dateKey);
+    const days = ["日", "月", "火", "水", "木", "金", "土"];
+    return `${d.getMonth() + 1}月${d.getDate()}日（${days[d.getDay()]}）`;
+  };
+
   const weekdayLabels = ["日", "月", "火", "水", "木", "金", "土"];
   const CELL_HEIGHT = "78px";
+
+  const dayPopupSchedules = dayPopupDate ? scheduleMap[dayPopupDate] || [] : [];
 
   return (
     <div
@@ -274,15 +264,7 @@ export default function Home() {
       onTouchEnd={handleTouchEnd}
       style={{ backgroundColor: "#ffffff", color: "#111111", minHeight: "100vh", position: "relative" }}
     >
-     <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "8px" }}>
-          <button
-            onClick={() => router.push("/history")}
-            style={{ padding: "6px 14px", fontSize: "13px", color: "#2563eb", backgroundColor: "#ffffff", border: "1px solid #2563eb", borderRadius: "8px", cursor: "pointer" }}
-          >
-            履歴
-          </button>
-        </div>
-         <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto" }}>
+      <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "16px" }}>
           <button onClick={goPrevMonth} style={{ padding: "8px 14px", border: "1px solid #ccc", borderRadius: "8px", backgroundColor: "#ffffff", color: "#111111", cursor: "pointer" }}>
             ＜
@@ -320,7 +302,7 @@ export default function Home() {
                 return (
                   <div
                     key={index}
-                    onClick={() => handleEmptyCellClick(dateKey)}
+                    onClick={() => setDayPopupDate(dateKey)}
                     style={{
                       height: CELL_HEIGHT,
                       minWidth: 0,
@@ -335,21 +317,14 @@ export default function Home() {
                     <p style={{ fontSize: "12px", margin: 0, fontWeight: isToday ? "bold" : "normal", color: isHoliday(day) || weekday === 0 ? "#dc2626" : weekday === 6 ? "#2563eb" : "#333333" }}>
                       {day}
                     </p>
-                    <div style={{ marginTop: "2px", display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden" }}>
+                    <div style={{ marginTop: "2px", display: "flex", flexDirection: "column", gap: "2px", overflow: "hidden", pointerEvents: "none" }}>
                       {daySchedules.map((s) => (
-                        <button
+                        <div
                           key={s.id}
-                          onClick={(e) => handleScheduleClick(e, s, dateKey)}
-                          onMouseDown={() => startPress(s)}
-                          onMouseUp={cancelPress}
-                          onMouseLeave={cancelPress}
-                          onTouchStart={() => startPress(s)}
-                          onTouchEnd={cancelPress}
-                          onTouchCancel={cancelPress}
-                          style={{ fontSize: "10px", padding: "2px 3px", backgroundColor: s.color || "#1d9e75", color: "#ffffff", border: "none", borderRadius: "4px", cursor: "pointer", textAlign: "left", lineHeight: "1.3", overflow: "hidden", whiteSpace: "nowrap", display: "block", width: "100%", minWidth: 0 }}
+                          style={{ fontSize: "10px", padding: "2px 3px", backgroundColor: s.color || "#1d9e75", color: "#ffffff", borderRadius: "4px", textAlign: "left", lineHeight: "1.3", overflow: "hidden", whiteSpace: "nowrap", width: "100%", minWidth: 0 }}
                         >
                           {s.site_name}
-                        </button>
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -359,7 +334,8 @@ export default function Home() {
           </div>
         )}
       </div>
-<div style={{ padding: "0 16px 100px 16px", maxWidth: "480px", margin: "0 auto" }}>
+
+      <div style={{ padding: "0 16px 100px 16px", maxWidth: "480px", margin: "0 auto" }}>
         <p style={{ fontSize: "14px", fontWeight: "bold", color: "#555555", marginTop: "16px", marginBottom: "8px" }}>
           今日の予定
         </p>
@@ -389,6 +365,7 @@ export default function Home() {
           </div>
         )}
       </div>
+
       <button
         onClick={() => {
           setEditingId(null);
@@ -420,13 +397,111 @@ export default function Home() {
         ＋
       </button>
 
-      {actionSchedule && (
+      {dayPopupDate && (
         <div
-          onClick={() => setActionSchedule(null)}
+          onClick={() => setDayPopupDate(null)}
           style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", zIndex: 50 }}
         >
           <div
-            onClick={(e) => e.stopPropagation()}
+            onClick={(ev) => ev.stopPropagation()}
+            style={{ backgroundColor: "#ffffff", borderRadius: "12px", padding: "20px", width: "100%", maxWidth: "340px", boxSizing: "border-box" }}
+          >
+            <p style={{ margin: 0, fontSize: "16px", fontWeight: "bold", color: "#111111", textAlign: "center" }}>
+              {formatDateForPopup(dayPopupDate)}
+            </p>
+
+            <div style={{ marginTop: "16px", display: "flex", flexDirection: "column", gap: "8px" }}>
+              {dayPopupSchedules.length === 0 ? (
+                <p style={{ fontSize: "13px", color: "#999999", textAlign: "center", margin: "8px 0" }}>
+                  予定はありません
+                </p>
+              ) : (
+                dayPopupSchedules.map((s) => (
+                  <div key={s.id} style={{ display: "flex", gap: "6px", alignItems: "stretch" }}>
+                    <button
+                      onClick={() => handleSelectSchedule(s, dayPopupDate)}
+                      style={{
+                        flex: 1,
+                        padding: "14px 16px",
+                        fontSize: "15px",
+                        fontWeight: "bold",
+                        color: "#ffffff",
+                        backgroundColor: s.color || "#1d9e75",
+                        border: "none",
+                        borderRadius: "10px",
+                        cursor: "pointer",
+                        textAlign: "left",
+                        minWidth: 0,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                      }}
+                    >
+                      {s.site_name}
+                    </button>
+                    <button
+                      onClick={() => setActionSchedule(s)}
+                      style={{
+                        padding: "0 12px",
+                        fontSize: "18px",
+                        color: "#555555",
+                        backgroundColor: "#ffffff",
+                        border: "1px solid #ccc",
+                        borderRadius: "10px",
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      ⋯
+                    </button>
+                  </div>
+                ))
+              )}
+
+              <button
+                onClick={() => {
+                  handleEmptyEntry(dayPopupDate);
+                }}
+                style={{
+                  marginTop: "8px",
+                  padding: "12px 16px",
+                  fontSize: "14px",
+                  color: "#2563eb",
+                  backgroundColor: "#ffffff",
+                  border: "2px dashed #2563eb",
+                  borderRadius: "10px",
+                  cursor: "pointer",
+                }}
+              >
+                予定にない現場を入力
+              </button>
+
+              <button
+                onClick={() => setDayPopupDate(null)}
+                style={{
+                  marginTop: "4px",
+                  padding: "10px 16px",
+                  fontSize: "14px",
+                  color: "#555555",
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #ccc",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                }}
+              >
+                閉じる
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {actionSchedule && (
+        <div
+          onClick={() => setActionSchedule(null)}
+          style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", zIndex: 60 }}
+        >
+          <div
+            onClick={(ev) => ev.stopPropagation()}
             style={{ backgroundColor: "#ffffff", borderRadius: "12px", padding: "20px", width: "100%", maxWidth: "300px", boxSizing: "border-box" }}
           >
             <p style={{ margin: 0, fontSize: "16px", fontWeight: "bold", color: "#111111", textAlign: "center" }}>
@@ -462,7 +537,7 @@ export default function Home() {
           style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.4)", display: "flex", alignItems: "center", justifyContent: "center", padding: "20px", zIndex: 50 }}
         >
           <div
-            onClick={(e) => e.stopPropagation()}
+            onClick={(ev) => ev.stopPropagation()}
             style={{ backgroundColor: "#ffffff", borderRadius: "12px", padding: "24px", width: "100%", maxWidth: "360px", boxSizing: "border-box" }}
           >
             <h2 style={{ fontSize: "18px", fontWeight: "bold", margin: 0, color: "#111111", textAlign: "center" }}>
